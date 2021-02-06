@@ -17,8 +17,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         list = GetData().list;
-        quizPanel.questionText.text = list[questionIndex].question;
-        quizPanel.choice.SetChoices(list[questionIndex].ChoicesAndAnswer().ToArray());
+        LoadNewQuestion();
     }
 
     // Update is called once per frame
@@ -31,8 +30,35 @@ public class GameController : MonoBehaviour
 
     public void OnAnswer(int index)
     {
+        if (answerIndex == index)
+        {
+            print("CORRECT");
+        }
 
+
+        questionIndex++;
+        LoadNewQuestion();
     }
+
+    int answerIndex = 0;
+    public void LoadNewQuestion()
+    {
+        quizPanel.questionText.text = list[questionIndex].question;
+
+        answerIndex = UnityEngine.Random.Range(0, 4);
+        quizPanel.choice.SetChoices(list[questionIndex].ShuffleChoicesAndAnswer(answerIndex).ToArray());
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     [Serializable]
     public class Question
@@ -41,10 +67,13 @@ public class GameController : MonoBehaviour
         public List<string> choices;
         public string answer;
 
-        public List<string> ChoicesAndAnswer()
+        //shuffles the choices, but ensuring the answer is at answer index (between 0 and 4[exclusive])
+        public List<String> ShuffleChoicesAndAnswer(int answerIndex)
         {
             List<string> temp = new List<string>(choices);
-            temp.Add(answer);
+            System.Random rng = new System.Random();
+            rng.Shuffle(temp);
+            temp.Insert(answerIndex, answer);
             return temp;
         }
 
@@ -63,7 +92,22 @@ public class GameController : MonoBehaviour
         StreamReader reader = new StreamReader(response.GetResponseStream());
         string jsonResponse = reader.ReadToEnd();
         QuestionList q = JsonUtility.FromJson<QuestionList>(jsonResponse);
-        print(q.list.Count);
         return q;
+    }
+}
+
+
+static class RandomExtensions
+{
+    public static void Shuffle<T>(this System.Random rng, List<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            int k = rng.Next(n--);
+            T temp = list[n];
+            list[n] = list[k];
+            list[k] = temp;
+        }
     }
 }
