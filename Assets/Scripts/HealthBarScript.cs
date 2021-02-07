@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class HealthBarScript : MonoBehaviour
 {
-    int hearts = 3;
+    [HideInInspector]
+    public int hearts = 3;
     Image[] heartImgs;
     // Start is called before the first frame update
     void Start()
@@ -13,7 +14,7 @@ public class HealthBarScript : MonoBehaviour
         heartImgs = GetComponentsInChildren<Image>();
     }
 
-    void SetHearts(int newHearts)
+    public void SetHearts(int newHearts)
     {
         hearts = newHearts;
         for (int i = 0; i < hearts; i++)

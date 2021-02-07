@@ -10,7 +10,7 @@ using System.IO;
 
 public class GameController : MonoBehaviour
 {
-    int questionIndex = 0;
+    int questionIndex = -1;
     List<Question> list = new List<Question>();
     public GameObject obstaclePrefab;
 
@@ -53,25 +53,26 @@ public class GameController : MonoBehaviour
             SetDifficulty(difficulty + 0.5f);
         }
 
-        if (questionIndex < list.Count - 1)
-        {
-            questionIndex++;
-            LoadNewQuestion();
-        }
-        else
-        {
-            Debug.LogError("REACHED END OF QUESTIONS LIST");
-        }
+        LoadNewQuestion();
     }
 
     int answerIndex = 0;
     public void LoadNewQuestion()
     {
-        quizPanel.questionText.text = list[questionIndex].question;
+        if (questionIndex < list.Count - 1)
+        {
+            questionIndex++;
+            quizPanel.questionText.text = list[questionIndex].question;
 
-        answerIndex = UnityEngine.Random.Range(0, 4);
-        quizPanel.choice.SetChoices(list[questionIndex].ShuffleChoicesAndAnswer(answerIndex).ToArray());
-        ResetTimer();
+            answerIndex = UnityEngine.Random.Range(0, 4);
+            quizPanel.choice.SetChoices(list[questionIndex].ShuffleChoicesAndAnswer(answerIndex).ToArray());
+            ResetTimer();
+        }
+        else
+        {
+            Debug.LogError("REACHED END OF QUESTIONS LIST");
+        }
+
     }
 
     void ResetTimer()
@@ -96,14 +97,18 @@ public class GameController : MonoBehaviour
 
     void AnswerTimeOut()
     {
-        ResetTimer();
         SetDifficulty(difficulty + 0.5f);
+        LoadNewQuestion();
     }
 
     float difficulty = 1f;
     public float spawnIntervalDifficultyConstant;
     void SetDifficulty(float newDifficulty)
     {
+        if (newDifficulty > difficulty)
+        {
+            //indicate higher difficulty
+        }
         difficulty = newDifficulty;
         obstacleSpawnInterval = 7f - difficulty * spawnIntervalDifficultyConstant;
     }
@@ -134,9 +139,24 @@ public class GameController : MonoBehaviour
         obstacleQueue.Enqueue(obj);
     }
 
+    public void OnObstacleHit()
+    {
+        health.SetHearts(health.hearts - 1);
+        CheckHealthIfGameOver();
+    }
 
+    void CheckHealthIfGameOver()
+    {
+        if (health.hearts <= 0)
+        {
+            GameOver();
+        }
+    }
 
+    void GameOver()
+    {
 
+    }
 
 
 

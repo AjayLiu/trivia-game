@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
-
+    GameController game;
     public CharacterController2D controller;
 
     // Start is called before the first frame update
     void Start()
     {
+        game = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
     }
 
     bool jump = false;
@@ -26,5 +27,13 @@ public class PlayerScript : MonoBehaviour
     {
         controller.Move(0, false, jump);
         jump = false;
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Obstacle"))
+        {
+            game.OnObstacleHit();
+        }
     }
 }
