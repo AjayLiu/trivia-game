@@ -12,32 +12,56 @@ public class GameController : MonoBehaviour
 {
     int questionIndex = 0;
     List<Question> list = new List<Question>();
+    public GameObject obstaclePrefab;
+
+    float score = 0;
+    public Text scoreText;
+
+    public HealthBarScript health;
 
     // Start is called before the first frame update
     void Start()
     {
         list = GetData().list;
         LoadNewQuestion();
+        SetDifficulty(1);
+        StartCoroutine(ObstacleSpawner());
     }
+
 
     // Update is called once per frame
     void Update()
     {
-
+        UpdateScore();
     }
 
+    void UpdateScore()
+    {
+        score += Time.deltaTime;
+        scoreText.text = "Score: " + Mathf.FloorToInt(score).ToString();
+    }
     public QuizPanelScript quizPanel;
 
-    public void OnAnswer(int index)
+    public void OnAnswer(int guessIndex)
     {
-        if (answerIndex == index)
+        if (answerIndex == guessIndex)
         {
             print("CORRECT");
         }
+        else
+        {
+            SetDifficulty(difficulty + 0.5f);
+        }
 
-
-        questionIndex++;
-        LoadNewQuestion();
+        if (questionIndex < list.Count - 1)
+        {
+            questionIndex++;
+            LoadNewQuestion();
+        }
+        else
+        {
+            Debug.LogError("REACHED END OF QUESTIONS LIST");
+        }
     }
 
     int answerIndex = 0;
@@ -47,10 +71,68 @@ public class GameController : MonoBehaviour
 
         answerIndex = UnityEngine.Random.Range(0, 4);
         quizPanel.choice.SetChoices(list[questionIndex].ShuffleChoicesAndAnswer(answerIndex).ToArray());
+        ResetTimer();
     }
 
+    void ResetTimer()
+    {
+        if (currentCountdown != null)
+            StopCoroutine(currentCountdown);
+        currentCountdown = StartCoroutine(TimerCountdown(8f));
+    }
 
+    Coroutine currentCountdown;
+    IEnumerator TimerCountdown(float seconds)
+    {
+        float timer = 0;
+        while (timer < seconds)
+        {
+            timer += Time.deltaTime;
+            quizPanel.timeBar.fillAmount = timer / seconds;
+            yield return null;
+        }
+        AnswerTimeOut();
+    }
 
+    void AnswerTimeOut()
+    {
+        ResetTimer();
+        SetDifficulty(difficulty + 0.5f);
+    }
+
+    float difficulty = 1f;
+    public float spawnIntervalDifficultyConstant;
+    void SetDifficulty(float newDifficulty)
+    {
+        difficulty = newDifficulty;
+        obstacleSpawnInterval = 7f - difficulty * spawnIntervalDifficultyConstant;
+    }
+
+    public float obstacleSpawnInterval;
+    IEnumerator ObstacleSpawner()
+    {
+        SpawnObstacle();
+        yield return new WaitForSeconds(obstacleSpawnInterval);
+        StartCoroutine(ObstacleSpawner());
+    }
+
+    Queue<ObstacleScript> obstacleQueue = new Queue<ObstacleScript>();
+    public Transform obstacleSpawn;
+    float WORLD_LEFT_BOUND = -9;
+    void SpawnObstacle()
+    {
+        ObstacleScript obj;
+        if (obstacleQueue.Count == 0 || obstacleQueue.Peek().transform.position.x > WORLD_LEFT_BOUND)
+        {
+            obj = Instantiate(obstaclePrefab, obstacleSpawn.position, Quaternion.identity).GetComponent<ObstacleScript>();
+        }
+        else
+        {
+            obj = obstacleQueue.Dequeue();
+        }
+        obj.transform.position = obstacleSpawn.position;
+        obstacleQueue.Enqueue(obj);
+    }
 
 
 

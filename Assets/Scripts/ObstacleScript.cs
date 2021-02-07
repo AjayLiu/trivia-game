@@ -1,13 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-public class QuizPanelScript : MonoBehaviour
-{
-    public Text questionText;
-    public ChoiceScript choice;
-    public Image timeBar;
 
+public class ObstacleScript : MonoBehaviour
+{
+    public float speed;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,6 +14,6 @@ public class QuizPanelScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        transform.Translate(Vector2.left * Time.deltaTime * speed);
     }
 }
