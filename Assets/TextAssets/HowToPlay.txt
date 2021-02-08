@@ -1,0 +1,6 @@
+Press Space to Jump
+Jump to avoid obstacles
+If hit by an obstacle, you lose 1 heart
+Every 5 correctly answered question earns 1/5 of a heart
+Incorrectly answered questions or questions not answered in time results in higher difficulty (more obstacles)
+Score is calculated by total time survived
