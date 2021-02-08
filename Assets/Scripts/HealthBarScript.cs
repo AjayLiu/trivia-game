@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class HealthBarScript : MonoBehaviour
 {
     [HideInInspector]
-    public int hearts = 3;
+    public float hearts = 3f;
+    const float MAX_HEARTS = 3f;
     Image[] heartImgs;
     // Start is called before the first frame update
     void Start()
@@ -14,16 +15,25 @@ public class HealthBarScript : MonoBehaviour
         heartImgs = GetComponentsInChildren<Image>();
     }
 
-    public void SetHearts(int newHearts)
+    public void SetHearts(float newHearts)
     {
-        hearts = newHearts;
-        for (int i = 0; i < hearts; i++)
+        hearts = Mathf.Clamp(newHearts, 0, MAX_HEARTS);
+        int wholeHearts = Mathf.FloorToInt(hearts);
+        for (int i = 0; i < wholeHearts; i++)
         {
-            heartImgs[i].color = Color.red;
+            heartImgs[i].gameObject.SetActive(true);
         }
-        for (int i = 0; i < 3 - hearts; i++)
+        for (int i = 0; i < 3 - wholeHearts; i++)
         {
-            heartImgs[3 - i - 1].color = Color.white;
+            heartImgs[3 - i - 1].gameObject.SetActive(false);
+        }
+
+        //set leftover heart
+        float remainder = hearts - wholeHearts;
+        if (remainder != 0)
+        {
+            heartImgs[wholeHearts].fillAmount = hearts - wholeHearts;
+            heartImgs[wholeHearts].gameObject.SetActive(true);
         }
     }
 }

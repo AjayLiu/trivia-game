@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Time.timeScale = 1;
         list = GetData().list;
         LoadNewQuestion();
         SetDifficulty(1);
@@ -42,11 +43,13 @@ public class GameController : MonoBehaviour
     }
     public QuizPanelScript quizPanel;
 
+
+    public float heartsPerCorrect = 0.2f;
     public void OnAnswer(int guessIndex)
     {
         if (answerIndex == guessIndex)
         {
-            print("CORRECT");
+            health.SetHearts(health.hearts + heartsPerCorrect);
         }
         else
         {
@@ -142,6 +145,7 @@ public class GameController : MonoBehaviour
     public void OnObstacleHit()
     {
         health.SetHearts(health.hearts - 1);
+        print(health.hearts);
         CheckHealthIfGameOver();
     }
 
@@ -153,9 +157,11 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public GameOverPanelScript gameoverPanelScript;
     void GameOver()
     {
-
+        Time.timeScale = 0;
+        gameoverPanelScript.ShowPanel(Mathf.FloorToInt(score));
     }
 
 
