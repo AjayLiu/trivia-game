@@ -23,10 +23,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1;
-        list = GetData().list;
-        LoadNewQuestion();
-        SetDifficulty(1);
-        StartCoroutine(ObstacleSpawner());
+        StartCoroutine(GetData(CheckFetchStatus));
     }
 
 
@@ -193,15 +190,37 @@ public class GameController : MonoBehaviour
         public List<Question> list;
     }
 
-    private QuestionList GetData()
+    // https://www.red-gate.com/simple-talk/dotnet/c-programming/calling-restful-apis-unity3d/
+    IEnumerator GetData(Action<QuestionList> onSuccess)
     {
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://troygamedev.github.io/trivia-game-data/questions.json");
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        StreamReader reader = new StreamReader(response.GetResponseStream());
-        string jsonResponse = reader.ReadToEnd();
-        QuestionList q = JsonUtility.FromJson<QuestionList>(jsonResponse);
-        return q;
+        using (UnityWebRequest req = UnityWebRequest.Get(String.Format("https://troygamedev.github.io/trivia-game-data/questions.json")))
+        {
+            yield return req.Send();
+            while (!req.isDone)
+                yield return null;
+            byte[] result = req.downloadHandler.data;
+            string json = System.Text.Encoding.Default.GetString(result);
+            QuestionList info = JsonUtility.FromJson<QuestionList>(json);
+            onSuccess(info);
+        }
+        // HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://troygamedev.github.io/trivia-game-data/questions.json");
+        // HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        // StreamReader reader = new StreamReader(response.GetResponseStream());
+        // string jsonResponse = reader.ReadToEnd();
+        // QuestionList q = JsonUtility.FromJson<QuestionList>(jsonResponse);
+        // return q;
     }
+
+
+    public void CheckFetchStatus(QuestionList jsonList)
+    {
+        list = jsonList.list;
+        LoadNewQuestion();
+        SetDifficulty(1);
+        StartCoroutine(ObstacleSpawner());
+    }
+
+
 }
 
 
